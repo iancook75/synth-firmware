@@ -110,13 +110,10 @@ void play_note() {
   double frequency = double(pow(2,num)) * 440;
   Serial.println(frequency);
   aSin.setFreq(int(frequency));
-
-  // code to change frequency to this value and play the note
 }
 
 void updateControl(){}
 
 void stop_note() {
-  // code to stop playing a note, probably setting the frequency to 0
   aSin.setFreq(0);
 }
