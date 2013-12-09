@@ -3,6 +3,7 @@
 #include <MozziGuts.h>
 #include <Oscil.h> // oscillator template
 #include <tables/sin2048_int8.h> // sine table for oscillator
+#include <StackArray.h>
 
 Oscil <SIN2048_NUM_CELLS, AUDIO_RATE> aSin(SIN2048_DATA);
 
@@ -17,6 +18,8 @@ byte NOTE_ON = 144;
 byte NOTE_OFF = 128;
 byte PITCH_WHEEL = 224; // wrong
 byte CONTROLLER = 208; // wrong
+
+StackArray <int> stack;
 
 void setup() {
   Serial.begin(57600);
@@ -106,14 +109,25 @@ void log_midi() {
 }
 
 void play_note() {
-  double num = double(int(notebyte) - 69) / 12;
-  double frequency = double(pow(2,num)) * 440;
-  Serial.println(frequency);
-  aSin.setFreq(int(frequency));
+  stack.push(int(notebyte));
+  int note = convert_to_frequency(notebyte);
+  
+  aSin.setFreq(note);
 }
 
 void updateControl(){}
 
 void stop_note() {
-  aSin.setFreq(0);
+  int(notebyte) = stack.pop();
+  if (stack.isEmpty()) {
+    aSin.setFreq(0);
+  } else {
+    aSin.setFreq(convert_to_frequency(stack.peek()));
+  }
+}
+
+int convert_to_frequency(int nb) {
+  double num = double(nb - 69) / 12;
+  double frequency = double(pow(2,num)) * 440;
+  return int(frequency);
 }
